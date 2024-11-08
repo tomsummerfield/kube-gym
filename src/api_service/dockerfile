@@ -1,0 +1,18 @@
+FROM python:3.12-alpine
+
+WORKDIR /app
+
+# Copy dependency files from root
+COPY requirements.txt ./
+
+# Copy application code
+COPY main.py ./
+
+# Install dependencies
+RUN pip install -r requirements.txt
+
+# Expose port 8000
+EXPOSE 8000
+
+# Run the FastAPI application using uvicorn with reload enabled
+CMD ["fastapi", "run", "main.py", "--reload"]
