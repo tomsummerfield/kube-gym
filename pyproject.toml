@@ -4,9 +4,11 @@ version = "0.1.0"
 description = ""
 authors = ["Thomas Summerfield <summerfield11@hotmail.co.uk>"]
 readme = "README.md"
+packages = [{include = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.12"
+gym = "^0.26.2"
 
 
 [build-system]
