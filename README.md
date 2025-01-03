@@ -1,33 +1,94 @@
-# Gymnasium Examples
-Some simple examples of Gymnasium environments and wrappers.
-For some explanations of these examples, see the [Gymnasium documentation](https://gymnasium.farama.org).
+# KubeGym: Kubernetes Security Gym Environment
 
-### Environments
-This repository hosts the examples that are shown [on the environment creation documentation](https://gymnasium.farama.org/tutorials/gymnasium_basics/environment_creation/).
-- `GridWorldEnv`: Simplistic implementation of gridworld environment
+A Gymnasium environment that simulates a Kubernetes deployment under DoS attacks, designed for training defensive AI agents.
 
-### Wrappers
-This repository hosts the examples that are shown [on wrapper documentation](https://gymnasium.farama.org/api/wrappers/).
-- `ClipReward`: A `RewardWrapper` that clips immediate rewards to a valid range
-- `DiscreteActions`: An `ActionWrapper` that restricts the action space to a finite subset
-- `RelativePosition`: An `ObservationWrapper` that computes the relative position between an agent and a target
-- `ReacherRewardWrapper`: Allow us to weight the reward terms for the reacher environment
+## Overview
 
-### Contributing
-If you would like to contribute, follow these steps:
-- Fork this repository
-- Clone your fork
-- Set up pre-commit via `pre-commit install`
+KubeGym provides a simplified simulation of a Kubernetes deployment where:
+- A **Red Agent** (environment) randomly launches DoS attacks that spike resource usage
+- A **Blue Agent** (defender) must detect and mitigate these attacks through various actions
 
-PRs may require accompanying PRs in [the documentation repo](https://github.com/Farama-Foundation/Gymnasium/tree/main/docs).
+The environment monitors key metrics:
+- CPU Usage
+- Memory Usage
+- Network Requests
+- Pod Health Status
 
+### Defensive Actions Available
+The Blue Agent can take the following actions:
+1. Do nothing (maintain current state)
+2. Enable rate limiting (reduces network requests)
+3. Scale up resources (increases CPU/Memory limits)
+4. Block suspicious IPs (reduces attack effectiveness)
+5. Reset deployment (emergency restore to normal state)
 
 ## Installation
 
-To install your new environment, run the following commands:
-
-```{shell}
+```shell
 cd kube_gym
 pip install -e .
 ```
+
+## Usage
+
+```python
+import gymnasium as gym
+import kube_gym
+
+# Create the environment
+env = gym.make('KubeGym-v0')
+
+# Reset the environment
+observation, info = env.reset()
+
+# Run one episode
+for _ in range(100):
+    # Your agent's logic here
+    action = env.action_space.sample()  # Replace with your agent's decision
+    
+    # Take action in environment
+    observation, reward, terminated, truncated, info = env.step(action)
+    
+    # Render the current state (optional)
+    env.render()
+    
+    if terminated or truncated:
+        observation, info = env.reset()
+```
+
+## Environment Details
+
+### Observation Space
+- `cpu_usage`: Float [0, 100]
+- `memory_usage`: Float [0, 100]
+- `network_requests`: Float [0, 1000]
+- `pod_status`: Binary (0: Healthy, 1: Unhealthy)
+
+### Action Space
+Discrete(5) representing different defensive measures
+
+### Rewards
+- Positive rewards for successful attack mitigation
+- Negative rewards for:
+  - Taking unnecessary actions when no attack is present
+  - Failing to respond to attacks
+  - Using costly defensive measures
+
+## Requirements
+
+- Python 3.7+
+- gymnasium
+- numpy
+
+## Contributing
+
+If you would like to contribute, follow these steps:
+1. Fork this repository
+2. Clone your fork
+3. Create a new branch for your feature
+4. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
